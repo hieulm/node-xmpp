@@ -2,7 +2,7 @@
 
 const fetch = global.fetch || require('node-fetch')
 const {parse} = require('ltx')
-const compareAltConnections = require('./alt-connections').sort
+const compareAltConnections = require('./alt-connections').compare
 
 function resolve (domain) {
   return fetch(`https://${domain}/.well-known/host-meta`).then((res) => res.text()).then(res => {
@@ -11,14 +11,15 @@ function resolve (domain) {
       'urn:xmpp:alt-connections:websocket',
       'urn:xmpp:alt-connections:httppoll',
       'urn:xmpp:alt-connections:xbosh'
-    ].indexOf(link.attrs.rel) > -1
-    )
+    ].indexOf(link.attrs.rel) > -1)
     .map(({attrs}) => ({
       rel: attrs.rel,
       href: attrs.href,
       method: attrs.rel.split(':').pop(),
-      url: attrs.href
-    })).sort(compareAltConnections)
+      uri: attrs.href,
+      type: 'web',
+    }))
+    .sort(compareAltConnections)
   })
   .catch(() => {
     return []
